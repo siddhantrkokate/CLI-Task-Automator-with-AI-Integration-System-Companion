@@ -1,7 +1,7 @@
 import requests
 import json
 
-def call_gemini_api(user_input, system_instructions=None):
+def generate(user_input, system_instructions=None):
     GEMINI_API_KEY = "AIzaSyBWXMcBCbajjasncf2fWF9KNWAVGYfD-WY"  # replace this
     MODEL_ID = "gemini-2.0-flash"
     GENERATE_CONTENT_API = "generateContent"

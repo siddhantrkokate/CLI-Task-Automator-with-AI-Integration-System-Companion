@@ -1,0 +1,17 @@
+Starting npm update script...
+This script will update npm to the latest version.
+User confirmation: y
+Attempting to update npm using 'npm install -g npm@latest'
+Running command: ['npm', 'install', '-g', 'npm@latest']
+FileNotFoundError: [WinError 2] The system cannot find the file specified
+npm update failed with error:
+[WinError 2] The system cannot find the file specified
+
+It seems like you might be facing permission issues.
+Try the following solutions:
+1. Run the script as an administrator (right-click and 'Run as administrator').
+2. Use Node Version Manager (nvm) to manage Node.js and npm versions (recommended).
+3. Change the ownership of the .npm directory to your user (if you know what you're doing).
+4. Clear npm cache using 'npm cache clean --force' (use with caution).
+Please try these solutions and run the script again.
+Script finished.
