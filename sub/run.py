@@ -1,140 +1,214 @@
 import subprocess
 import os
 import platform
+import logging
 import sys
+from textblob import TextBlob
 
-def log_to_file(message):
-    """Logs a message to hello.txt."""
-    try:
-        with open("hello.txt", "a") as f:
-            f.write(message + "\n")
-    except Exception as e:
-        print(f"Error writing to log file: {e}")
+# Create directory if it doesn't exist
+if not os.path.exists('data'):
+    os.makedirs('data')
+if not os.path.exists('sub'):
+    os.makedirs('sub')
 
-def run_command(command, shell=False):
-    """Runs a command and returns the output and error."""
-    try:
-        log_to_file(f"Running command: {command}")
-        process = subprocess.Popen(
-            command,
-            shell=shell,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-        )
-        stdout, stderr = process.communicate()
-        log_to_file(f"Command output: {stdout}")
-        if stderr:
-            log_to_file(f"Command error: {stderr}")
-        return stdout, stderr, process.returncode
-    except FileNotFoundError as e:
-        log_to_file(f"FileNotFoundError: {e}")
-        return None, str(e), 127  # Mimic shell return code for "command not found"
-    except Exception as e:
-        log_to_file(f"Exception running command: {e}")
-        return None, str(e), 1
+# Set up logging
+logging.basicConfig(filename='data/console_output.log', level=logging.DEBUG)
 
-def check_admin_permissions():
-    """Checks if the script is running with administrator privileges."""
-    if platform.system() == "Windows":
+class StreamToLogger:
+    def __init__(self, logger, level, orig_stream):
+        self.logger = logger
+        self.level = level
+        self.orig_stream = orig_stream
+        self.buf = ''
+
+    def write(self, buf):
+        self.buf += buf
+        self.orig_stream.write(buf)  # Write to original stream (console)
+        self.orig_stream.flush()
+        if '\n' in buf:
+            self.logger.log(self.level, self.buf.strip())
+            self.buf = ''
+
+    def flush(self):
+        self.orig_stream.flush()
+        if self.buf:
+            self.logger.log(self.level, self.buf.strip())
+            self.buf = ''
+
+# Save original stdout and stderr
+orig_stdout = sys.stdout
+orig_stderr = sys.stderr
+
+# Redirect stdout and stderr to logger
+logger = logging.getLogger()
+sys.stdout = StreamToLogger(logger, logging.INFO, orig_stdout)
+sys.stderr = StreamToLogger(logger, logging.ERROR, orig_stderr)
+
+# Helper functions for file operations
+class FileHelper:
+    @staticmethod
+    def empty_file(file_path):
         try:
-            # Check if the user is an administrator
-            return os.getuid() == 0
-        except AttributeError:
-            # os.getuid() doesn't exist on Windows, try another approach
-            import ctypes
-            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+            with open(file_path, 'w'):  # Open in write mode to clear the file
+                pass  # Do nothing, just clear the file
+        except Exception as e:
+            print(f"Error emptying file {file_path}: {e}")
+            logger.error(f"Error emptying file {file_path}: {e}")
+
+    @staticmethod
+    def append_to_file(file_path, content):
+        try:
+            with open(file_path, 'a') as file:
+                file.write(content + '\n')
+        except Exception as e:
+            print(f"Error appending to file {file_path}: {e}")
+            logger.error(f"Error appending to file {file_path}: {e}")
+
+    @staticmethod
+    def read_file(file_path):
+        try:
+            with open(file_path, 'r') as file:
+                return file.read()
+        except Exception as e:
+            print(f"Error reading file {file_path}: {e}")
+            logger.error(f"Error reading file {file_path}: {e}")
+            return ""
+
+    @staticmethod
+    def extract_python_code(text):
+        start_tag = '```python'
+        end_tag = '```'
+        start_index = text.find(start_tag)
+        if start_index == -1:
+            start_tag = '```py'
+            start_index = text.find(start_tag)
+        if start_index == -1:
+            return text  # If no code block found, return the original text
+
+        start_index += len(start_tag)
+        end_index = text.find(end_tag, start_index)
+
+        if end_index == -1:
+            return text  # If no end tag found, return original text
+
+        return text[start_index:end_index].strip()
+
+def analyze_log_with_sentiment(log_content):
+    analysis = TextBlob(log_content)
+    polarity = analysis.sentiment.polarity
+    subjectivity = analysis.sentiment.subjectivity
+
+    if polarity > 0.1:
+        sentiment = "Positive"
+    elif polarity < -0.1:
+        sentiment = "Negative"
     else:
-        return os.geteuid() == 0
+        sentiment = "Neutral"
 
-def update_npm():
-    """Updates npm using the recommended method."""
-    print("Attempting to update npm using 'npm install -g npm@latest'")
-    log_to_file("Attempting to update npm using 'npm install -g npm@latest'")
-    stdout, stderr, returncode = run_command(["npm", "install", "-g", "npm@latest"])
+    return f"Sentiment: {sentiment}, Polarity: {polarity}, Subjectivity: {subjectivity}"
 
-    if returncode == 0:
-        print("npm updated successfully.")
-        log_to_file("npm updated successfully.")
-    else:
-        print(f"npm update failed with error:\n{stderr}")
-        log_to_file(f"npm update failed with error:\n{stderr}")
-        return False
-    
-    # Verify the updated version
-    print("Verifying npm version...")
-    stdout, stderr, returncode = run_command(["npm", "-v"])
-    if returncode == 0:
-        print(f"npm version: {stdout.strip()}")
-        log_to_file(f"npm version: {stdout.strip()}")
-    else:
-        print(f"Failed to verify npm version: {stderr}")
-        log_to_file(f"Failed to verify npm version: {stderr}")
+# Initialize the FileHelper
+file = FileHelper()
 
-    return True
 
-def handle_permission_issues():
-    """Guides the user on how to resolve permission issues."""
-    print("\nIt seems like you might be facing permission issues.")
-    log_to_file("\nIt seems like you might be facing permission issues.")
-    print("Try the following solutions:")
-    log_to_file("Try the following solutions:")
-    print("1. Run the script as an administrator (right-click and 'Run as administrator').")
-    log_to_file("1. Run the script as an administrator (right-click and 'Run as administrator').")
-    print("2. Use Node Version Manager (nvm) to manage Node.js and npm versions (recommended).")
-    log_to_file("2. Use Node Version Manager (nvm) to manage Node.js and npm versions (recommended).")
-    print("3. Change the ownership of the .npm directory to your user (if you know what you're doing).")
-    log_to_file("3. Change the ownership of the .npm directory to your user (if you know what you're doing).")
-    print("4. Clear npm cache using 'npm cache clean --force' (use with caution).")
-    log_to_file("4. Clear npm cache using 'npm cache clean --force' (use with caution).")
-    print("Please try these solutions and run the script again.")
-    log_to_file("Please try these solutions and run the script again.")
-
-def main():
-    """Main function to update npm."""
+def check_node_npm():
+    """Checks if Node.js and npm are installed."""
     try:
-        # Initialize the log file
-        with open("hello.txt", "w") as f:
-            f.write("Starting npm update script...\n")
+        subprocess.run(['node', '-v'], check=True, capture_output=True)
+        subprocess.run(['npm', '-v'], check=True, capture_output=True)
+        logging.info("Node.js and npm are installed.")
+        return True
+    except FileNotFoundError:
+        logging.warning("Node.js or npm not found.")
+        return False
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error checking Node.js/npm: {e}")
+        return False
 
-        print("This script will update npm to the latest version.")
-        log_to_file("This script will update npm to the latest version.")
-        
-        confirmation = input("Do you want to proceed? (y/n): ").lower()
-        log_to_file(f"User confirmation: {confirmation}")
 
-        if confirmation != "y":
-            print("Update cancelled.")
-            log_to_file("Update cancelled.")
-            return
+def install_node_npm():
+    """Prompts the user to install Node.js and npm."""
+    print("Node.js and npm are required to create a React app.")
+    install = input("Do you want to proceed with automatic installation of Node.js? (y/n): ").lower()
 
-        if not check_admin_permissions() and platform.system() == "Windows":
-            print("Warning: It is recommended to run this script with administrator privileges to avoid potential permission issues.")
-            log_to_file("Warning: It is recommended to run this script with administrator privileges to avoid potential permission issues.")
-            permission_choice = input("Continue without administrator privileges? (y/n): ").lower()
-            log_to_file(f"User choice to continue without admin: {permission_choice}")
-            if permission_choice != 'y':
-                print("Please run the script as administrator.")
-                log_to_file("Please run the script as administrator.")
-                return
-        
-        if not update_npm():
-            handle_permission_issues()
-        
+    if install == 'y':
+        try:
+            os_name = platform.system()
+            if os_name == "Windows":
+                print("Automatic installation of Node.js on Windows is not yet supported by this script. Please install manually and rerun.")
+                logging.error("Automatic Node.js installation on Windows not supported.")
+                return False
+            elif os_name == "Darwin":  # macOS
+                try:
+                    subprocess.run(['brew', 'install', 'node'], check=True)
+                    print("Node.js installed successfully via Homebrew.")
+                    logging.info("Node.js installed via Homebrew.")
+                    return True
+                except FileNotFoundError:
+                    print("Homebrew not found. Please install Homebrew first, then rerun this script, or install Node.js manually.")
+                    logging.error("Homebrew not found.")
+                    return False
+                except subprocess.CalledProcessError as e:
+                    print(f"Error installing Node.js via Homebrew: {e}")
+                    logging.error(f"Error installing Node.js via Homebrew: {e}")
+                    return False
+            elif os_name == "Linux":
+                try:
+                    subprocess.run(['sudo', 'apt-get', 'update'], check=True)
+                    subprocess.run(['sudo', 'apt-get', 'install', 'nodejs', 'npm'], check=True)
+                    print("Node.js and npm installed successfully via apt-get.")
+                    logging.info("Node.js installed via apt-get.")
+                    return True
+                except subprocess.CalledProcessError as e:
+                    print(f"Error installing Node.js and npm via apt-get: {e}")
+                    logging.error(f"Error installing Node.js via apt-get: {e}")
+                    return False
+            else:
+                print("Unsupported operating system for automatic Node.js installation.")
+                logging.error("Unsupported OS for Node.js auto-install.")
+                return False
 
+        except Exception as e:
+            print(f"An error occurred during Node.js installation: {e}")
+            logging.error(f"Error during Node.js installation: {e}")
+            return False
+    else:
+        print("Please install Node.js and npm manually and rerun this script.")
+        logging.info("Node.js installation skipped by user.")
+        return False
+
+
+def create_react_app(app_name):
+    """Creates a React app using create-react-app."""
+    try:
+        confirmation = input(f"Do you want to create a React app named '{app_name}' in the current directory? (y/n): ").lower()
+        if confirmation == 'y':
+            try:
+                # Check if npx is available, if not, try installing create-react-app globally
+                try:
+                    subprocess.run(['npx', 'create-react-app', app_name], check=True)
+                except FileNotFoundError:
+                    print("npx not found. Attempting to install create-react-app globally.")
+                    try:
+                        subprocess.run(['npm', 'install', '-g', 'create-react-app'], check=True)
+                        subprocess.run(['create-react-app', app_name], check=True)
+                    except subprocess.CalledProcessError as e:
+                        print(f"Error installing or running create-react-app globally: {e}")
+                        logging.error(f"Error installing or running create-react-app globally: {e}")
+                        return False
+
+                print(f"React app '{app_name}' created successfully.")
+                logging.info(f"React app '{app_name}' created successfully.")
+                return True
+            except subprocess.CalledProcessError as e:
+                print(f"Error creating React app: {e}")
+                logging.error(f"Error creating React app: {e}")
+                return False
+        else:
+            print("React app creation cancelled.")
+            logging.info("React app creation cancelled by user.")
+            return False
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
-        log_to_file(f"An unexpected error occurred: {e}")
-    finally:
-        print("Script finished. Check hello.txt for logs.")
-        if 'log_to_file' in locals():
-             log_to_file("Script finished.")
-        else:
-            try:
-                with open("hello.txt", "a") as f:
-                    f.write("Script finished.\n")
-            except:
-                pass
-
-if __name__ == "__main__":
-    main()
+        logging.error(f"Unexpected error: {e}")
+        return False
