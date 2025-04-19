@@ -1,0 +1,4 @@
+Program started.
+Welcome to the background removal tool.
+User input: C:\image (1).png
+Background removed successfully.
