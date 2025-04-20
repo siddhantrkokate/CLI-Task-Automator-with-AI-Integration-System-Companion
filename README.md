@@ -44,35 +44,22 @@ Before running the project, ensure the following are installed:
 pip install google-generativeai
 ```
 
-Additional requirements (if needed) can be added to a requirements.txt.
 
-📽️ Demonstration
+## 📚 Learnings
 
-The project demonstrates three use-cases:
+- Deepened understanding of subprocess handling and error logging in Python
 
-Check PHP Version – A simple version-check script
+- Learned to set up AI model configurations and deal with the limitations of free-tier AI tools
 
-Arithmetic Calculator – Takes user input and performs basic math
+- Gained experience automating end-to-end task flows with fallback correction logic
 
-Image Background Remover – Removes background from a given image file and saves output
+## 💡 Future Improvements
 
-These are shown in the accompanying video, along with explanations of the code and AI integration.
+- Enable direct installation or uninstallation of applications via prompt (e.g., install whatsapp)
 
-📚 Learnings
+- Integrate AI with more everyday software to make interactions more intuitive and powerful
 
-Deepened understanding of subprocess handling and error logging in Python
-
-Learned to set up AI model configurations and deal with the limitations of free-tier AI tools
-
-Gained experience automating end-to-end task flows with fallback correction logic
-
-💡 Future Improvements
-
-Enable direct installation or uninstallation of applications via prompt (e.g., install whatsapp)
-
-Integrate AI with more everyday software to make interactions more intuitive and powerful
-
-📄 Summary
+## 📄 Summary
 
 This project demonstrates how natural language and AI can simplify routine system operations, helping bridge the gap between human intent and machine execution without needing clicks or detailed technical commands.
 
