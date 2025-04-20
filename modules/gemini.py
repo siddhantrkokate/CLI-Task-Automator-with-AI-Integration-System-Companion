@@ -1,8 +1,8 @@
 import requests
 import json
 
-def generate(user_input, system_instructions=None):
-    GEMINI_API_KEY = "AIzaSyBWXMcBCbajjasncf2fWF9KNWAVGYfD-WY"  # replace this
+def gemini(user_input, system_instructions=None):
+    GEMINI_API_KEY = ""  # replace this
     MODEL_ID = "gemini-2.0-flash"
     GENERATE_CONTENT_API = "generateContent"
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_ID}:{GENERATE_CONTENT_API}?key={GEMINI_API_KEY}"
@@ -46,7 +46,7 @@ def generate(user_input, system_instructions=None):
         return response.text
 
 def generate_text(text):
-    api_key = "SgiB-aBrY6OkHseiUGQVLqubF"
+    api_key = ""
     model_name = "Llama-3.3-70B-Instruct"
     messages = [
         {"role": "user", "content": text}

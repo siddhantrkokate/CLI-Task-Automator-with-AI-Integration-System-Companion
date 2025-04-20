@@ -1,55 +1,58 @@
-import cv2
-import numpy as np
+# Import required libraries
 import os
+import sys
+import pip
+from rembg.bg import remove
 
-def remove_background(image_path):
+# Function to install required packages
+def install_packages():
     try:
-        # Load the image
-        image = cv2.imread(image_path)
-        if image is None:
-            print("Error: Could not load the image.")
-            with open('D:\\System Companion\\sub\\data.txt', 'a') as f:
-                f.write("Error: Could not load the image.\n")
-            return
-        
-        # Convert the image to grayscale
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        # Apply thresholding to segment out the background
-        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
-        # Apply the threshold to the original image to remove the background
-        result = cv2.bitwise_and(image, image, mask=thresh)
-
-        # Save the result
-        cv2.imwrite('output.png', result)
-        print("Background removed successfully.")
-        with open('D:\\System Companion\\sub\\data.txt', 'a') as f:
-            f.write("Background removed successfully.\n")
-
+        # Install rembg package
+        pip.main(['install', 'rembg'])
+        with open('D://System Companion//sub//data.txt', 'a', encoding='utf-8') as f:
+            f.write("rembg package installed successfully\n")
     except Exception as e:
-        print(f"An error occurred: {e}")
-        with open('D:\\System Companion\\sub\\data.txt', 'a') as f:
-            f.write(f"An error occurred: {e}\n")
+        with open('D://System Companion//sub//data.txt', 'a', encoding='utf-8') as f:
+            f.write(f"Error installing rembg package: {e}\n")
 
+# Function to remove background from image
+def remove_background(input_path, output_path):
+    try:
+        with open(input_path, 'rb') as i:
+            result = remove(i.read())
+            with open(output_path, 'wb') as o:
+                o.write(result)
+        with open('D://System Companion//sub//data.txt', 'a', encoding='utf-8') as f:
+            f.write(f"Background removed from {input_path} and saved to {output_path}\n")
+    except Exception as e:
+        with open('D://System Companion//sub//data.txt', 'a', encoding='utf-8') as f:
+            f.write(f"Error removing background: {e}\n")
+
+# Main function
 def main():
-    with open('D:\\System Companion\\sub\\data.txt', 'a') as f:
-        f.write("Program started.\n")
-    print("Welcome to the background removal tool.")
-    with open('D:\\System Companion\\sub\\data.txt', 'a') as f:
-        f.write("Welcome to the background removal tool.\n")
+    with open('D://System Companion//sub//data.txt', 'a', encoding='utf-8') as f:
+        f.write("Program started\n")
     
-    image_path = input("Please enter the path to the image: ")
-    with open('D:\\System Companion\\sub\\data.txt', 'a') as f:
-        f.write(f"User input: {image_path}\n")
-    
-    if not os.path.exists(image_path):
-        print("Error: The image file does not exist.")
-        with open('D:\\System Companion\\sub\\data.txt', 'a') as f:
-            f.write("Error: The image file does not exist.\n")
-        return
-    
-    remove_background(image_path)
+    # Check if rembg package is installed
+    try:
+        import rembg
+        with open('D://System Companion//sub//data.txt', 'a', encoding='utf-8') as f:
+            f.write("rembg package is already installed\n")
+    except ImportError:
+        install_packages()
+
+    # Get input and output paths from user
+    input_path = input("Enter the path to the input image: ")
+    output_path = input("Enter the path to the output image: ")
+    with open('D://System Companion//sub//data.txt', 'a', encoding='utf-8') as f:
+        f.write(f"Input path: {input_path}\n")
+        f.write(f"Output path: {output_path}\n")
+
+    # Remove background from image
+    remove_background(input_path, output_path)
+
+    with open('D://System Companion//sub//data.txt', 'a', encoding='utf-8') as f:
+        f.write("Program finished\n")
 
 if __name__ == "__main__":
     main()

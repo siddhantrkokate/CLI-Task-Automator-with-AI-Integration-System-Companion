@@ -1,1 +1,1 @@
-Task From User: remove background from image
+Task From User: remove background of image using bg remove python package

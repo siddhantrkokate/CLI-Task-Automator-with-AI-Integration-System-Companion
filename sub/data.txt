@@ -1,4 +1,6 @@
-Program started.
-Welcome to the background removal tool.
-User input: C:\image (1).png
-Background removed successfully.
+Program started
+rembg package is already installed
+Input path: C:\image (1).png
+Output path: D:\System Companion\output.png
+Background removed from C:\image (1).png and saved to D:\System Companion\output.png
+Program finished
