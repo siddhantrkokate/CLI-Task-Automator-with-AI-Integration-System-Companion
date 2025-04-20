@@ -15,33 +15,34 @@ The goal is to reduce unnecessary clicks and automate everyday tasks using open-
 
 - Auto-correction and re-execution on error
 
-Handles system-level operations like:
+- Handles system-level operations like:
 
-Software version checks
+-- Software version checks
 
-Small tool creation (e.g., arithmetic calculator)
+-- Small tool creation (e.g., arithmetic calculator)
 
-Utility execution (e.g., background remover for images)
+-- Utility execution (e.g., background remover for images)
 
-🛠️ Technologies Used
+## 🛠️ Technologies Used
 
-Python: Core programming language for logic and execution
+- Python: Core programming language for logic and execution
 
-subprocess & os modules: For running background processes and system-level tasks
+- subprocess & os modules: For running background processes and system-level tasks
 
-Google Gemini 2.0 Flash (Free version): For quick and lightweight AI code generation
+- Google Gemini 2.0 Flash (Free version): For quick and lightweight AI code generation
 
-Meta Llama 3.3 (70B) via Ola Krutrim Cloud: Main model used for accurate code generation and correction
+- Meta Llama 3.3 (70B) via Ola Krutrim Cloud: Main model used for accurate code generation and correction
 
-📦 Requirements
+## 📦 Requirements
 
 Before running the project, ensure the following are installed:
 
-Python 3.8+
+1. Python 3.8+
 
-Required Python packages:
-
+2. Required Python packages:
+```bash
 pip install google-generativeai
+```
 
 Additional requirements (if needed) can be added to a requirements.txt.
 
