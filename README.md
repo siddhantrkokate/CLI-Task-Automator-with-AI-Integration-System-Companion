@@ -1,3 +1,5 @@
+#Recomanded to watch this video: https://drive.google.com/file/d/1_1aLDKS6w-E-IojHcvDafCNJEjczHGVe/view?usp=sharing
+
 # CLI Task Automator using AI
 
 ## 🧠 Project Overview
